@@ -1,0 +1,101 @@
+Before running the build-android.sh script you will need to do a little
+preparatory work as libjwt has a couple of dependencies; jansson & OpenSSL.
+
+firstly create an android/lib directory in the parent directory of this
+repository, so if your in libjwt/
+
+    $ cd ..
+
+now
+
+    $ mkdir -p android/lib
+
+Next prepare jansson
+
+    $ git clone https://github.com/ac000/jansson
+    $ cd jansson
+    $ git checkout -b android origin/android
+
+    $ ./build-android.sh
+
+( or if you need to override where the Android NDK is installed )
+
+    $ ANDROID_NDK=/path/to/ndk ./build-android.sh
+
+    $ cp -rv libs/* ../android/lib/
+    $ cd ..
+
+Now OpenSSL
+
+    $ git clone git://git.openssl.org/openssl.git
+    $ cd openssl
+    $ export ANDROID_NDK_HOME=/path/to/android_ndk_root
+    $ PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+
+( See NOTES.ANDROID for details )
+
+    $ ./Configure android-arm64 -D__ANDROID_API__=21
+    $ make
+    $ cp -av libcrypto.so libcrypto.so.3 libssl.so libssl.so.3 ../android/lib/arm64-v8a/
+
+    $ make clean
+    $ ./Configure android-arm -D__ANDROID_API__=16
+    $ make
+    $ cp -av libcrypto.so libcrypto.so.3 libssl.so libssl.so.3 ../android/lib/armeabi-v7a/
+
+    $ make clean
+    $ ./Configure android-x86_64 -D__ANDROID_API__=21
+    $ make
+    $ cp -av libcrypto.so libcrypto.so.3 libssl.so libssl.so.3 ../android/lib/x86_64/
+
+    $ make clean
+    $ ./Configure android-x86 -D__ANDROID_API__=16
+    $ make
+    $ cp -av libcrypto.so libcrypto.so.3 libssl.so libssl.so.3 ../android/lib/x86/
+    $ cd ..
+
+Now you should have an android directory hierarchy that looks like
+
+    android/
+    └── lib
+        ├── arm64-v8a
+        │   ├── libcrypto.so -> libcrypto.so.3
+        │   ├── libcrypto.so.3
+        │   ├── libjansson.so
+        │   ├── libssl.so -> libssl.so.3
+        │   └── libssl.so.3
+        ├── armeabi-v7a
+        │   ├── libcrypto.so -> libcrypto.so.3
+        │   ├── libcrypto.so.3
+        │   ├── libjansson.so
+        │   ├── libssl.so -> libssl.so.3
+        │   └── libssl.so.3
+        ├── x86
+        │   ├── libcrypto.so -> libcrypto.so.3
+        │   ├── libcrypto.so.3
+        │   ├── libjansson.so
+        │   ├── libssl.so -> libssl.so.3
+        │   └── libssl.so.3
+        └── x86_64
+            ├── libcrypto.so -> libcrypto.so.3
+            ├── libcrypto.so.3
+            ├── libjansson.so
+            ├── libssl.so -> libssl.so.3
+            └── libssl.so.3
+
+Now you can build libjwt
+
+( if you didn't already clone it)
+
+    $ git clone https://github.com/ac000/libjwt
+    $ cd libjwt
+    $ git checkout -b android origin/android
+
+    $ ./build-android.sh
+
+( or if you need to override where the Android NDK is installed )
+
+    $ ANDROID_NDK=/path/to/ndk ./build-android.sh
+
+    $ cp -rv android/libs/* ../android/lib/
+    $ cd ..
